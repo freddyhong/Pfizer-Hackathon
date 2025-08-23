@@ -1,13 +1,6 @@
 import React, { useMemo, useState } from "react";
 
-/**
- * CalendarPage
- * - Month navigation, today jump
- * - Select a day to view/add lightweight events (in-memory)
- * - Uses an 8-shade Pfizer-style blue palette (approximate). Swap to exact hexes if you have them.
- */
 
-// 🟦 Pfizer-like blues (replace with exact brand hex codes if you have them)
 const PFIZER = {
   blue1: "#15144B",
   blue2: "#272C77",
