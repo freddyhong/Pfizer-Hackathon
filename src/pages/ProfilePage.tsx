@@ -1,3 +1,4 @@
+// src/pages/ProfilePage.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import characterImage from "../assets/character.png"; // Poko's profile picture (auto-set)
 
@@ -41,7 +42,15 @@ function calcAge(bday: Date | null): { years: number; months: number } | null {
   return { years, months };
 }
 
-// --- LocalStorage helpers ---------------------------------------------------
+function fmtHMS(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds || 0));
+  const hh = String(Math.floor(s / 3600)).padStart(2, "0");
+  const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return `${hh}:${mm}:${ss}`;
+}
+
+// --- LocalStorage keys ------------------------------------------------------
 const LS_KEYS = {
   avatar: "poko.profile.avatarDataUrl",
   username: "poko.profile.username",
@@ -50,6 +59,13 @@ const LS_KEYS = {
   attendanceStreak: "poko.profile.longestAttendanceStreak",
   achievements: "poko.profile.achievements",
   pokoBirthday: "poko.profile.pokoBirthday",
+  // New:
+  enrollmentDate: "poko.profile.enrollmentDate",
+  playtimeSeconds: "poko.profile.playtimeSeconds",
+  playTimerRunning: "poko.profile.playTimerRunning",
+  playTimerStartedAt: "poko.profile.playTimerStartedAt",
+  money: "poko.profile.money",
+  pokoPersonality: "poko.profile.pokoPersonality",
 };
 
 // --- Components -------------------------------------------------------------
@@ -206,6 +222,23 @@ function AchievementBadge({
   );
 }
 
+// Small coin glyph
+function Coin({ size = 20 }: { size?: number }) {
+  return (
+    <span
+      aria-hidden
+      className="inline-block rounded-full border shadow-sm"
+      style={{
+        width: size,
+        height: size,
+        background:
+          "radial-gradient(circle at 30% 30%, #fff7c2, #ffd84d 60%, #e0aa00 90%)",
+        borderColor: "#d19c00",
+      }}
+    />
+  );
+}
+
 export default function ProfilePage() {
   // --- Profile state --------------------------------------------------------
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -221,6 +254,14 @@ export default function ProfilePage() {
   ]);
   const [newAchv, setNewAchv] = useState("");
 
+  // --- New: Enrollment, Playtime, Money ------------------------------------
+  const [enrollmentDateStr, setEnrollmentDateStr] = useState("");
+  const [playtimeSeconds, setPlaytimeSeconds] = useState(0);
+  const [playRunning, setPlayRunning] = useState(false);
+  const playTickRef = useRef<number | null>(null);
+  const [playStartedAt, setPlayStartedAt] = useState<number | null>(null); // epoch ms
+  const [money, setMoney] = useState<number>(0);
+
   // --- Poko state -----------------------------------------------------------
   const [pokoBirthdayStr, setPokoBirthdayStr] = useState("");
   const pokoBirthday = useMemo(
@@ -228,6 +269,9 @@ export default function ProfilePage() {
     [pokoBirthdayStr]
   );
   const pokoAge = useMemo(() => calcAge(pokoBirthday), [pokoBirthday]);
+
+  // --- New: Poko Personality ------------------------------------------------
+  const [pokoPersonality, setPokoPersonality] = useState<string>("Courageous");
 
   // Load from localStorage once
   useEffect(() => {
@@ -244,6 +288,20 @@ export default function ProfilePage() {
       const ach = localStorage.getItem(LS_KEYS.achievements);
       if (ach) setAchievements(JSON.parse(ach));
       setPokoBirthdayStr(localStorage.getItem(LS_KEYS.pokoBirthday) || "");
+
+      // New loads
+      setEnrollmentDateStr(localStorage.getItem(LS_KEYS.enrollmentDate) || "");
+      setPlaytimeSeconds(Number(localStorage.getItem(LS_KEYS.playtimeSeconds) || 0));
+      setMoney(Number(localStorage.getItem(LS_KEYS.money) || 1000));
+      const savedPersonality = localStorage.getItem(LS_KEYS.pokoPersonality);
+      if (savedPersonality) setPokoPersonality(savedPersonality);
+
+      const running = localStorage.getItem(LS_KEYS.playTimerRunning) === "1";
+      const startedAt = localStorage.getItem(LS_KEYS.playTimerStartedAt);
+      if (running) {
+        setPlayRunning(true);
+        if (startedAt) setPlayStartedAt(Number(startedAt));
+      }
     } catch {
       // Ignore localStorage errors (e.g., quota exceeded)
     }
@@ -260,6 +318,22 @@ export default function ProfilePage() {
       localStorage.setItem(LS_KEYS.attendanceStreak, String(attendanceStreak));
       localStorage.setItem(LS_KEYS.achievements, JSON.stringify(achievements));
       localStorage.setItem(LS_KEYS.pokoBirthday, pokoBirthdayStr);
+
+      // New persists
+      localStorage.setItem(LS_KEYS.enrollmentDate, enrollmentDateStr);
+      localStorage.setItem(LS_KEYS.playtimeSeconds, String(playtimeSeconds));
+      localStorage.setItem(LS_KEYS.money, String(money));
+      localStorage.setItem(LS_KEYS.pokoPersonality, pokoPersonality);
+
+      localStorage.setItem(LS_KEYS.playTimerRunning, playRunning ? "1" : "0");
+      if (playStartedAt) {
+        localStorage.setItem(
+          LS_KEYS.playTimerStartedAt,
+          String(playStartedAt)
+        );
+      } else {
+        localStorage.removeItem(LS_KEYS.playTimerStartedAt);
+      }
     } catch (err) {
       console.error("Failed to persist profile to localStorage", err);
     }
@@ -271,21 +345,68 @@ export default function ProfilePage() {
     attendanceStreak,
     achievements,
     pokoBirthdayStr,
+    enrollmentDateStr,
+    playtimeSeconds,
+    playRunning,
+    playStartedAt,
+    money,
+    pokoPersonality,
   ]);
 
-  // Defaults for initial UX (if no Poko birthday, use today)
+  // Default Poko birthday (once)
   useEffect(() => {
     if (!pokoBirthdayStr) setPokoBirthdayStr(fmtDateInput(new Date()));
   }, [pokoBirthdayStr]);
 
-  // Defaults for initial UX (if no Poko birthday, use today)
+  // Default Enrollment Date (once, if empty)
   useEffect(() => {
-    if (!pokoBirthdayStr) setPokoBirthdayStr(fmtDateInput(new Date()));
-  }, [pokoBirthdayStr]);
+    if (!enrollmentDateStr) setEnrollmentDateStr(fmtDateInput(new Date()));
+  }, [enrollmentDateStr]);
+
+  // Handle playtime timer
+  useEffect(() => {
+    if (!playRunning) {
+      if (playTickRef.current) {
+        window.clearInterval(playTickRef.current);
+        playTickRef.current = null;
+      }
+      return;
+    }
+    // If timer starts and we don't have a start timestamp, set one
+    if (!playStartedAt) {
+      setPlayStartedAt(Date.now());
+    }
+    playTickRef.current = window.setInterval(() => {
+      // Each tick: add seconds since last tick. To avoid drift, compute from startedAt.
+      setPlaytimeSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => {
+      if (playTickRef.current) {
+        window.clearInterval(playTickRef.current);
+        playTickRef.current = null;
+      }
+    };
+  }, [playRunning, playStartedAt]);
+
+  const togglePlayTimer = () => {
+    if (playRunning) {
+      // stopping: finalize elapsed since startedAt to be safe
+      if (playStartedAt) {
+        const elapsed = Math.floor((Date.now() - playStartedAt) / 1000);
+        setPlaytimeSeconds((s) => s + Math.max(0, elapsed % 1 === 0 ? 0 : 0)); // interval already accounts every second; no extra add
+      }
+      setPlayRunning(false);
+      setPlayStartedAt(null);
+    } else {
+      setPlayRunning(true);
+      setPlayStartedAt(Date.now());
+    }
+  };
 
   return (
     <div
-      className="min-h-screen"
+      // 👇 This margin offsets your fixed 16rem-wide sidebar
+      className="min-h-screen w-full overflow-x-hidden ml-32"
       style={{
         background: `linear-gradient(180deg, ${PFIZER.blue2}, #ffffff)`,
       }}
@@ -295,8 +416,11 @@ export default function ProfilePage() {
         className="sticky top-0 z-30 border-b backdrop-blur bg-white/70"
         style={{ borderColor: PFIZER.blue4 }}
       >
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold" style={{ color: PFIZER.blue1 }}>
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <h1
+            className="text-xl sm:text-2xl font-bold"
+            style={{ color: PFIZER.blue1 }}
+          >
             Profile
           </h1>
           <div className="text-sm" style={{ color: PFIZER.blue2 }}>
@@ -306,10 +430,10 @@ export default function ProfilePage() {
       </header>
 
       {/* Main */}
-      <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <main className="mx-auto w-full max-w-6xl px-3 sm:px-4 md:px-6 py-4 md:py-6 grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Profile card */}
         <section
-          className="lg:col-span-2 rounded-2xl border shadow bg-white p-6"
+          className="lg:col-span-2 rounded-2xl border shadow bg-white p-4 sm:p-6"
           style={{ borderColor: PFIZER.blue4 }}
         >
           <div className="flex flex-col gap-6">
@@ -347,9 +471,49 @@ export default function ProfilePage() {
                     onChange={(e) => setBirthdayStr(e.target.value)}
                   />
                 </div>
+
+                {/* New: Enrollment Date */}
+                <div>
+                  <label
+                    className="text-xs uppercase tracking-wide"
+                    style={{ color: PFIZER.blue2 }}
+                  >
+                    Enrollment Date
+                  </label>
+                  <input
+                    type="date"
+                    className="mt-1 w-full px-3 py-2 rounded-xl border outline-none focus:ring-2"
+                    style={{ borderColor: PFIZER.blue4 }}
+                    value={enrollmentDateStr}
+                    onChange={(e) => setEnrollmentDateStr(e.target.value)}
+                  />
+                </div>
+
+                {/* New: Money (Coins) */}
+                <div>
+                  <label
+                    className="text-xs uppercase tracking-wide"
+                    style={{ color: PFIZER.blue2 }}
+                  >
+                    Money
+                  </label>
+                  <div className="mt-1 flex items-center justify-between gap-3 rounded-xl border px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <Coin />
+                      <span
+                        className="text-xl font-semibold tabular-nums"
+                        style={{ color: PFIZER.blue1 }}
+                      >
+                        {money}
+                      </span>
+                    </div>
+      
+                  </div>
+                </div>
               </div>
             </div>
 
+            {/* Streaks */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <StatCard
                 label="Longest Missions Streak"
@@ -361,6 +525,71 @@ export default function ProfilePage() {
                 value={attendanceStreak}
                 onChange={setAttendanceStreak}
               />
+            </div>
+
+            {/* New: Total Playtime */}
+            <div
+              className="rounded-2xl p-4 border shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+              style={{ borderColor: PFIZER.blue4, background: "white" }}
+            >
+              <div>
+                <div
+                  className="text-xs uppercase tracking-wide"
+                  style={{ color: PFIZER.blue2 }}
+                >
+                  Total Playtime
+                </div>
+                <div
+                  className="text-2xl font-bold tabular-nums"
+                  style={{ color: PFIZER.blue1 }}
+                >
+                  {fmtHMS(playtimeSeconds)}
+                </div>
+                <div className="text-xs mt-1" style={{ color: PFIZER.blue2 }}>
+                  Counts while the timer is running. Persists across refresh.
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-3 py-2 rounded-xl text-sm border"
+                  style={{
+                    borderColor: PFIZER.blue4,
+                    color: PFIZER.blue4,
+                    background: playRunning ? PFIZER.blue8 : "white",
+                  }}
+                  onClick={togglePlayTimer}
+                  title={playRunning ? "Pause" : "Start"}
+                >
+                  {playRunning ? "Pause" : "Start"}
+                </button>
+                <button
+                  className="px-3 py-2 rounded-xl text-sm border"
+                  style={{ borderColor: PFIZER.blue4, color: PFIZER.blue4 }}
+                  onClick={() =>
+                    setPlaytimeSeconds((s) => Math.max(0, s - 300))
+                  }
+                >
+                  −5 min
+                </button>
+                <button
+                  className="px-3 py-2 rounded-xl text-sm border"
+                  style={{ borderColor: PFIZER.blue4, color: PFIZER.blue4 }}
+                  onClick={() => setPlaytimeSeconds((s) => s + 300)}
+                >
+                  +5 min
+                </button>
+                <button
+                  className="px-3 py-2 rounded-xl text-sm border"
+                  style={{ borderColor: PFIZER.blue4, color: PFIZER.blue4 }}
+                  onClick={() => {
+                    setPlayRunning(false);
+                    setPlayStartedAt(null);
+                    setPlaytimeSeconds(0);
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
 
             {/* Achievements */}
@@ -422,24 +651,24 @@ export default function ProfilePage() {
 
         {/* Poko card */}
         <aside
-          className="rounded-2xl border shadow bg-white p-6 flex flex-col"
+          className="rounded-2xl border shadow bg-white p-4 sm:p-6 flex flex-col"
           style={{ borderColor: PFIZER.blue4 }}
         >
           <h2
-            className="text-lg font-bold mb-4"
+            className="text-lg font-bold mb-3 sm:mb-4"
             style={{ color: PFIZER.blue1 }}
           >
             Poko (Smartpet)
           </h2>
 
           <div
-            className="w-full rounded-2xl overflow-hidden border mb-4"
+            className="w-full rounded-2xl overflow-hidden border mb-3 sm:mb-4"
             style={{ borderColor: PFIZER.blue5, background: PFIZER.blue8 }}
           >
             <img
               src={characterImage}
               alt="Poko character"
-              className="w-full h-48 object-contain"
+              className="w-full h-40 sm:h-48 object-contain"
             />
           </div>
 
@@ -458,6 +687,26 @@ export default function ProfilePage() {
                 value={pokoBirthdayStr}
                 onChange={(e) => setPokoBirthdayStr(e.target.value)}
               />
+            </div>
+
+            {/* New: Personality */}
+            <div>
+              <label
+                className="text-xs uppercase tracking-wide"
+                style={{ color: PFIZER.blue2 }}
+              >
+                Personality
+              </label>
+              <input
+                className="mt-1 w-full px-3 py-2 rounded-xl border outline-none focus:ring-2"
+                style={{ borderColor: PFIZER.blue4 }}
+                value={pokoPersonality}
+                onChange={(e) => setPokoPersonality(e.target.value)}
+                placeholder="e.g., Courageous"
+              />
+              <p className="text-xs mt-1" style={{ color: PFIZER.blue2 }}>
+                Defaulted to <span className="font-semibold">Courageous</span>.
+              </p>
             </div>
 
             <div
@@ -501,8 +750,8 @@ export default function ProfilePage() {
         </aside>
       </main>
 
-      {/* Footer */}
-      <footer className="py-6"></footer>
+      {/* Footer spacing */}
+      <footer className="py-4" />
     </div>
   );
 }
