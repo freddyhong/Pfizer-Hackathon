@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Navbar } from "./components/Navbar";
 import MainPage from "./pages/MainPage";
 import CalendarPage from "./pages/CalendarPage";
+import LearningPage from "./pages/LearningPage";
 import ProfilePage from "./pages/ProfilePage";
 import AchievementsPage from "./pages/AchievementsPage";
 
@@ -18,6 +19,8 @@ function App() {
         return <ProfilePage />;
       case "Achievements":
         return <AchievementsPage />;
+      case "Learning":
+      return <LearningPage />;
       default:
         return <MainPage />;
     }
