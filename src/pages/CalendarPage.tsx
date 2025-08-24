@@ -45,6 +45,11 @@ function keyFor(d: Date) {
   )}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+// ✅ To-do types + helper
+type Todo = { id: string; text: string; done: boolean };
+type Todos = Record<string, Todo[]>;
+const uid = () => Math.random().toString(36).slice(2, 9);
+
 export default function CalendarPage() {
   const today = new Date();
   const [cursor, setCursor] = useState(
@@ -52,9 +57,13 @@ export default function CalendarPage() {
   );
   const [selected, setSelected] = useState<Date>(today);
   const [events, setEvents] = useState<Events>({
-    [keyFor(today)]: ["Kickoff @ 10:", "Medication refill"],
+    [keyFor(today)]: ["Appointment @ 10AM", "Medication refill"],
   });
   const [draft, setDraft] = useState("");
+
+  // ✅ To-do state
+  const [todos, setTodos] = useState<Todos>({});
+  const [todoDraft, setTodoDraft] = useState("");
 
   const grid = useMemo(
     () => getMonthGrid(cursor.getFullYear(), cursor.getMonth()),
@@ -76,6 +85,41 @@ export default function CalendarPage() {
     setDraft("");
   }
 
+  // ✅ To-do handlers
+  function addTodo() {
+    const k = keyFor(selected);
+    if (!todoDraft.trim()) return;
+    setTodos((prev) => ({
+      ...prev,
+      [k]: [...(prev[k] || []), { id: uid(), text: todoDraft.trim(), done: false }],
+    }));
+    setTodoDraft("");
+  }
+
+  function toggleTodo(id: string) {
+    const k = keyFor(selected);
+    setTodos((prev) => ({
+      ...prev,
+      [k]: (prev[k] || []).map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
+    }));
+  }
+
+  function removeTodo(id: string) {
+    const k = keyFor(selected);
+    setTodos((prev) => ({
+      ...prev,
+      [k]: (prev[k] || []).filter((t) => t.id !== id),
+    }));
+  }
+
+  function clearCompleted() {
+    const k = keyFor(selected);
+    setTodos((prev) => ({
+      ...prev,
+      [k]: (prev[k] || []).filter((t) => !t.done),
+    }));
+  }
+
   // Weekday headers starting from Sunday
   const weekStart = new Date(2024, 7, 18); // arbitrary Sunday to map names
   const weekdayNames = Array.from({ length: 7 }, (_, i) =>
@@ -87,11 +131,17 @@ export default function CalendarPage() {
       )
     )
   );
+  // Date comparison utility
 
   const isSameDay = (a: Date, b: Date) =>
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
+
+  // ✅ Per-day todos derived
+  const selectedKey = keyFor(selected);
+  const dayTodos = todos[selectedKey] || [];
+  const remaining = dayTodos.filter((t) => !t.done).length;
 
   return (
     <div
@@ -149,13 +199,7 @@ export default function CalendarPage() {
             </button>
           </div>
 
-          {/* <div className="hidden md:flex items-center gap-2">
-            <span
-              className="text-sm font-medium"
-              style={{ color: PFIZER.blue8 }}
-            >
-              Legend:
-            </span>
+          { <div className="hidden md:flex items-center gap-2">
             <span className="inline-flex items-center text-xs gap-1">
               <span
                 className="w-3 h-3 rounded-full"
@@ -170,7 +214,7 @@ export default function CalendarPage() {
               />
               Today
             </span>
-          </div> */}
+          </div> }
         </div>
       </header>
 
@@ -202,6 +246,7 @@ export default function CalendarPage() {
                   const hasEvents = !!events[k]?.length;
                   const isToday = isSameDay(date, today);
                   const isSelected = isSameDay(date, selected);
+                  const isWeekend = [0, 6].includes(date.getDay());
 
                   return (
                     <button
@@ -214,12 +259,14 @@ export default function CalendarPage() {
                           ? PFIZER.blue6
                           : isToday
                           ? PFIZER.blue3
+                          : isWeekend
+                          ? PFIZER.blue8
                           : inCurrentMonth
                           ? "white"
                           : "#fafafa",
-                        color: isSelected ? "white" : "inherit",
+                        color: isSelected || isWeekend ? "Navy" : "inherit",
                         boxShadow: isSelected
-                          ? `0 0 0 2px ${PFIZER.blue6}`
+                          ? `0 0 0 2px ${PFIZER.blue8}`
                           : undefined,
                       }}
                     >
@@ -272,6 +319,7 @@ export default function CalendarPage() {
             Notes & events
           </p>
 
+          {/* Events list */}
           <div className="flex flex-col gap-3">
             {(events[keyFor(selected)] || []).map((evt, i) => (
               <div
@@ -289,7 +337,7 @@ export default function CalendarPage() {
                     }));
                   }}
                   className="text-xs px-2 py-1 rounded-md border"
-                  style={{ color: PFIZER.blue7, borderColor: PFIZER.blue3 }}
+                  style={{ color: PFIZER.blue6, borderColor: PFIZER.blue3 }}
                 >
                   Remove
                 </button>
@@ -313,6 +361,92 @@ export default function CalendarPage() {
               </button>
             </div>
           </div>
+
+          {/* Divider */}
+          <hr className="my-5" style={{ borderColor: PFIZER.blue3, opacity: 0.2 }} />
+
+          {/* ✅ To-do list */}
+          <h3 className="text-md font-semibold mb-2" style={{ color: PFIZER.blue3 }}>
+            To-do
+          </h3>
+
+          <div className="flex gap-2">
+            <input
+              value={todoDraft}
+              onChange={(e) => setTodoDraft(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addTodo()}
+              placeholder="Add a task…"
+              className="flex-1 px-3 py-2 rounded-xl border outline-none focus:ring-2"
+              style={{ borderColor: PFIZER.blue3 }}
+            />
+            <button
+              onClick={addTodo}
+              className="px-4 py-2 rounded-xl font-medium shadow-sm"
+              style={{ background: PFIZER.blue6, color: "white" }}
+            >
+              Add
+            </button>
+          </div>
+
+          <ul className="flex flex-col gap-2 mt-3">
+            {dayTodos.length === 0 ? (
+              <li className="text-sm" style={{ color: PFIZER.blue3 }}>
+                No tasks yet—add one above.
+              </li>
+            ) : (
+              dayTodos.map((t) => (
+                <li
+                  key={t.id}
+                  className="flex items-center gap-2 justify-between border rounded-xl px-3 py-2"
+                  style={{
+                    borderColor: PFIZER.blue3,
+                    background: t.done ? PFIZER.blue8 : "transparent",
+                  }}
+                >
+                  <label className="flex items-center gap-2 flex-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={t.done}
+                      onChange={() => toggleTodo(t.id)}
+                      className="w-4 h-4"
+                      style={{ accentColor: PFIZER.blue6 }}
+                    />
+                    <span
+                      className="text-sm"
+                      style={{
+                        textDecoration: t.done ? "line-through" : "none",
+                        color: t.done ? PFIZER.blue2 : "inherit",
+                      }}
+                    >
+                      {t.text}
+                    </span>
+                  </label>
+                  <button
+                    onClick={() => removeTodo(t.id)}
+                    className="text-xs px-2 py-1 rounded-md border"
+                    style={{ color: PFIZER.blue6, borderColor: PFIZER.blue3 }}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+
+          {dayTodos.length > 0 && (
+            <div className="flex items-center justify-between mt-3">
+              <span className="text-xs" style={{ color: PFIZER.blue3 }}>
+                {remaining} left
+              </span>
+              <button
+                onClick={clearCompleted}
+                className="text-xs px-2 py-1 rounded-md border"
+                style={{ color: PFIZER.blue5, borderColor: PFIZER.blue3 }}
+              >
+                Clear completed
+              </button>
+            </div>
+          )}
         </aside>
       </main>
     </div>
