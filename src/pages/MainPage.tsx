@@ -5,10 +5,132 @@ import { DailyTasks } from "../components/DailyTasks";
 import characterImage from "../assets/character.png";
 import { Chatbot } from "../components/Chatbot";
 
+const moods = [
+  {
+    name: "Sad",
+    icon: "😔",
+    color: "#60A5FA",
+    indicatorPos: { cx: 44.8, cy: 85 },
+    emojiPos: { top: "60%", left: "16%" },
+  },
+  {
+    name: "Okay",
+    icon: "😐",
+    color: "#FBBF24",
+    indicatorPos: { cx: 140, cy: 30 },
+    emojiPos: { top: "21%", left: "50%" },
+  },
+  {
+    name: "Happy",
+    icon: "😊",
+    color: "#34D399",
+    indicatorPos: { cx: 235.2, cy: 85 },
+    emojiPos: { top: "60%", left: "84%" },
+  },
+];
+
+interface FeelingStatusBarProps {
+  currentMood: string;
+  onSetMood: (mood: string) => void;
+}
+
+export function FeelingStatusBar({
+  currentMood,
+  onSetMood,
+}: FeelingStatusBarProps) {
+  const activeMood = moods.find((m) => m.name === currentMood) || moods[2];
+
+  return (
+    <div
+      className="w-full max-w-md relative"
+      style={{ aspectRatio: "280 / 140" }}
+    >
+      {/* The SVG Arc and Indicator */}
+      <svg viewBox="0 0 280 140" className="absolute inset-0">
+        <defs>
+          <linearGradient id="arcGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#60A5FA" />
+            <stop offset="50%" stopColor="#FBBF24" />
+            <stop offset="100%" stopColor="#34D399" />
+          </linearGradient>
+        </defs>
+
+        <path
+          d="M 37 102 A 110 110 0 0 1 243 102"
+          stroke="url(#arcGradient)"
+          strokeWidth="10"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        <g
+          style={{ transition: "transform 0.4s ease-in-out" }}
+          transform={`translate(${activeMood.indicatorPos.cx}, ${activeMood.indicatorPos.cy})`}
+        >
+          <circle
+            cx="0"
+            cy="0"
+            r="8"
+            fill="white"
+            stroke={activeMood.color}
+            strokeWidth="3"
+          />
+        </g>
+      </svg>
+
+      {moods.map((mood) => (
+        <button
+          key={mood.name}
+          onClick={() => onSetMood(mood.name)}
+          className="text-2xl transition-all duration-300 absolute"
+          style={{
+            top: mood.emojiPos.top,
+            left: mood.emojiPos.left,
+            transform: `translate(-50%, -50%) ${
+              currentMood === mood.name ? "scale(1.15)" : "scale(1)"
+            }`,
+            opacity: currentMood === mood.name ? 1 : 0.6,
+          }}
+          aria-label={`Set mood to ${mood.name}`}
+        >
+          {mood.icon}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const TopStatusBar = () => (
+  <div className="w-full max-w-sm text-center">
+    <div className="bg-[#3857a6bd] backdrop-blur-sm rounded-full px-6 py-2">
+      <p className="font-bold text-[#EBF5FC] text-shadow text-lg">
+        111 Days with Poko
+      </p>
+    </div>
+  </div>
+);
+
+const GreetingBox = ({
+  childName,
+  mood,
+}: {
+  childName: string;
+  mood: string;
+}) => (
+  <div className="w-full max-w-sm text-center mt-4">
+    <div className="bg-white/80 backdrop-blur-md rounded-2xl px-6 py-4 shadow-lg">
+      <p className="font-semibold text-gray-800 text-xl">
+        Hi {childName}! I'm feeling {mood.toLowerCase()} today!
+      </p>
+    </div>
+  </div>
+);
+
 function MainPage() {
   const childName = "Zach";
   const [isTasksVisible, setIsTasksVisible] = useState(false);
   const [isChatbotVisible, setIsChatbotVisible] = useState(false);
+  const [currentMood, setCurrentMood] = useState("Happy");
 
   return (
     <main className="ml-64 min-h-screen bg-gradient-to-b from-blue-300 to-blue-100 p-8 font-sans relative flex flex-col">
@@ -58,7 +180,11 @@ function MainPage() {
             Poko is happy to see you.
           </p>
         </header>
-
+        <TopStatusBar />
+        <FeelingStatusBar
+          currentMood={currentMood}
+          onSetMood={setCurrentMood}
+        />
         <div className="group cursor-pointer text-center">
           <img
             src={characterImage}
@@ -67,6 +193,7 @@ function MainPage() {
           />
         </div>
       </div>
+
       <div className="absolute bottom-8 right-8 z-10">
         <button
           onClick={() => setIsChatbotVisible(true)}
