@@ -95,7 +95,7 @@ export default function AchievementsPage() {
     >
       <header className="text-center mb-10">
         <h1 className="text-4xl font-bold" style={{ color: PFIZER.blue2 }}>
-          🏆 Your Rewards
+          🏆 Zach's Rewards
         </h1>
       </header>
 
