@@ -47,7 +47,7 @@ export default function ProfilePage() {
     <div className="min-h-screen w-full overflow-x-hidden ml-32" style={{ background: `linear-gradient(180deg, ${PFIZER.blue2}, #ffffff)` }}>
       <header className="sticky top-0 z-30 border-b backdrop-blur bg-white/70" style={{ borderColor: PFIZER.blue4 }}>
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: PFIZER.blue1 }}>Zach's Profile</h1>
+          <h1 className="text-xl sm:text-3xl font-bold" style={{ color: PFIZER.blue1 }}>Zach's Profile</h1>
         </div>
       </header>
 
