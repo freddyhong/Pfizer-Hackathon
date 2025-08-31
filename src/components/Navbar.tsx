@@ -1,8 +1,6 @@
-// src/components/Navbar.tsx
 import React, { useState } from "react";
 import LogoPng from "../assets/logo.png";
 
-// Reusable NavItem component (mostly styling changes)
 interface NavItemProps {
   href: string;
   label: string;
@@ -47,7 +45,6 @@ const NavItem: React.FC<NavItemProps> = ({
   );
 };
 
-// The main Navbar component, now styled as a sidebar
 export function Navbar({
   activeItem,
   setActiveItem,
@@ -153,11 +150,12 @@ export function Navbar({
           </svg>
         </NavItem>
 
-       <NavItem
+        <NavItem
           href="/journal"
           label="Daily Journal"
           isActive={activeItem === "Journal"}
-          onClick={() => setActiveItem("Journal")}>
+          onClick={() => setActiveItem("Journal")}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -170,6 +168,49 @@ export function Navbar({
               strokeLinecap="round"
               strokeLinejoin="round"
               d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+        </NavItem>
+
+        <NavItem
+          href="/CareTeam"
+          label="CareTeam"
+          isActive={activeItem === "CareTeam"}
+          onClick={() => setActiveItem("CareTeam")}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 20h18" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 20V8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 5a3 3 0 1 0 0 6a3 3 0 0 0 0-6z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 6.5v3M10.5 8h3"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10 20v-4h4v4"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8 10h2v2H8zM14 10h2v2h-2z"
             />
           </svg>
         </NavItem>
