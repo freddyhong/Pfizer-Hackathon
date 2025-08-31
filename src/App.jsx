@@ -6,6 +6,7 @@ import LearningPage from "./pages/LearningPage";
 import ProfilePage from "./pages/ProfilePage";
 import AchievementsPage from "./pages/AchievementsPage";
 import JournalPage from "./pages/JournalPage";
+import CareTeamPage from "./pages/CareTeam";
 
 function App() {
   const [activePage, setActivePage] = useState("Main");
@@ -21,9 +22,11 @@ function App() {
       case "Achievements":
         return <AchievementsPage />;
       case "Learning":
-      return <LearningPage />;
+        return <LearningPage />;
       case "Journal":
-      return <JournalPage />;
+        return <JournalPage />;
+      case "CareTeam":
+        return <CareTeamPage />;
       default:
         return <MainPage />;
     }
