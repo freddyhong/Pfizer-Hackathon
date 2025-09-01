@@ -29,7 +29,7 @@ function generateRandomData(scale, days = 75) {
   const today = new Date();
   return Array.from({ length: days }, (_, i) => {
     const date = new Date(today);
-    date.setDate(today.getDate() - (days - i));
+    date.setDate(today.getDate() - (days - 1 - i));
     return {
       date: date.toLocaleDateString("en-CA"),
       value: Math.floor(Math.random() * scale),
@@ -131,7 +131,6 @@ export default function DailyJournal() {
     }));
   }, [monthlyMoodData]);
 
-  // 👉 Monthly summary (avg mood + avg pain)
   const avgMood =
     monthlyMoodData.length > 0
       ? (monthlyMoodData.reduce((s, d) => s + d.value, 0) / monthlyMoodData.length).toFixed(1)

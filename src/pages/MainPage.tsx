@@ -104,7 +104,7 @@ const TopStatusBar = () => (
   <div className="w-full max-w-sm text-center">
     <div className="bg-[#3857a6bd] backdrop-blur-sm rounded-full px-6 py-2">
       <p className="font-bold text-[#EBF5FC] text-shadow text-lg">
-        111 Days with Poko
+        111 Days with Bluey
       </p>
     </div>
   </div>
