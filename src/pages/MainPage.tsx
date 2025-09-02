@@ -174,10 +174,12 @@ function MainPage() {
       <div className="flex-grow flex flex-col items-center justify-center">
         <header className="text-center mb-8">
           <h1 className="text-5xl font-bold text-white text-shadow">
-            Hi {childName}!
+            Hi there! You're doing an amazing job.
           </h1>
-          <p className="text-xl text-white/90 text-shadow mt-2">
-            Poko is happy to see you.
+          <p className="text-lg leading-relaxed text-white/90 text-shadow mt-6">
+            This dashboard is your space to follow Zach’s learning and emotional journey. <br className="mb-2" />
+            Whether it’s a great day or a tough one, your support helps paint a fuller picture of how he’s really doing. <br className="mb-2" />
+            <span className="font-semibold text-white">You’re an essential part of this story — thank you for being here for {childName}.</span>
           </p>
         </header>
         <TopStatusBar />
