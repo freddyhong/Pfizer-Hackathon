@@ -1,4 +1,3 @@
-import React from "react";
 import { DailyTasks } from "./DailyTasks";
 
 interface TasksModalProps {

@@ -1,5 +1,3 @@
-import React from "react";
-
 const PFIZER = {
   blue1: "#15144B",
   blue2: "#272C77",

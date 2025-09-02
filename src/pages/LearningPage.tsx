@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   format,
   addDays,
@@ -9,8 +9,6 @@ import {
   endOfMonth,
   eachDayOfInterval,
 } from "date-fns";
-
-
 
 const PFIZER = {
   blue1: "#15144B",
@@ -25,15 +23,29 @@ const PFIZER = {
 
 const today = new Date("2025-09-01T00:00:00-04:00");
 const attendanceStart = new Date("2025-08-14T00:00:00-04:00");
-const attendanceDates = eachDayOfInterval({ start: attendanceStart, end: today });
+const attendanceDates = eachDayOfInterval({
+  start: attendanceStart,
+  end: today,
+});
 
 const LessonCard = ({ lesson }: { lesson: Lesson }) => (
   <div className="bg-white p-5 rounded-lg shadow border border-blue-300">
     <h3 className="text-xl font-bold text-[#15144B] mb-2">{lesson.topic}</h3>
-    <p><strong>Date:</strong> {lesson.date}</p>
-    <p><strong>Summary:</strong> {lesson.summary}</p>
-    <p><strong>Quiz Score:</strong> {lesson.quizScore}</p>
-    <p><strong>Video:</strong> <a href="#" className="text-blue-600 underline">Video</a></p>
+    <p>
+      <strong>Date:</strong> {lesson.date}
+    </p>
+    <p>
+      <strong>Summary:</strong> {lesson.summary}
+    </p>
+    <p>
+      <strong>Quiz Score:</strong> {lesson.quizScore}
+    </p>
+    <p>
+      <strong>Video:</strong>{" "}
+      <a href="#" className="text-blue-600 underline">
+        Video
+      </a>
+    </p>
   </div>
 );
 
@@ -48,7 +60,8 @@ interface Lesson {
 const todayLesson: Lesson = {
   date: format(today, "yyyy-MM-dd"),
   topic: "What is Cancer?",
-  summary: "Zach learned the basics of how cancer forms and how treatments work.",
+  summary:
+    "Zach learned the basics of how cancer forms and how treatments work.",
   quizScore: "3/5",
   video: "Intro to Cancer Biology",
 };
@@ -88,7 +101,8 @@ function CalendarSection() {
   const end = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start, end });
 
-  const isAttended = (date: Date) => attendanceDates.some(d => isSameDay(d, date));
+  const isAttended = (date: Date) =>
+    attendanceDates.some((d) => isSameDay(d, date));
   const streakCount = attendanceDates.length;
 
   return (
@@ -98,45 +112,72 @@ function CalendarSection() {
           📅 Learning Calendar
         </h2>
         <div className="flex gap-2">
-          <button onClick={handlePrevMonth} className="bg-blue-200 px-2 py-1 rounded hover:bg-blue-300">
+          <button
+            onClick={handlePrevMonth}
+            className="bg-blue-200 px-2 py-1 rounded hover:bg-blue-300"
+          >
             ◀
           </button>
-          <button onClick={() => setCurrentMonth(startOfToday())} className="bg-blue-200 px-3 py-1 rounded hover:bg-blue-300">
+          <button
+            onClick={() => setCurrentMonth(startOfToday())}
+            className="bg-blue-200 px-3 py-1 rounded hover:bg-blue-300"
+          >
             Today
           </button>
-          <button onClick={handleNextMonth} className="bg-blue-200 px-2 py-1 rounded hover:bg-blue-300">
+          <button
+            onClick={handleNextMonth}
+            className="bg-blue-200 px-2 py-1 rounded hover:bg-blue-300"
+          >
             ▶
           </button>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-2 text-center">
-        {days.map(day => (
+        {days.map((day) => (
           <div
             key={day.toISOString()}
-            className={`p-2 rounded border text-sm ${isSameDay(day, today) ? 'bg-blue-100 font-bold' : ''}`}
+            className={`p-2 rounded border text-sm ${
+              isSameDay(day, today) ? "bg-blue-100 font-bold" : ""
+            }`}
           >
             {format(day, "d")} {isAttended(day) ? "😊" : ""}
           </div>
         ))}
       </div>
-      <p className="text-sm text-gray-700 mt-3">😊 indicates participation of the daily lessons</p>
-      <p className="text-sm text-gray-700">🔥 Longest streak: {streakCount} days</p>
+      <p className="text-sm text-gray-700 mt-3">
+        😊 indicates participation of the daily lessons
+      </p>
+      <p className="text-sm text-gray-700">
+        🔥 Longest streak: {streakCount} days
+      </p>
     </div>
   );
 }
 
 export default function LearningPage() {
   const [selectedPastDate, setSelectedPastDate] = useState(pastLessons[6].date);
-  const [selectedFutureDate, setSelectedFutureDate] = useState(futureLessons[0].date);
+  const [selectedFutureDate, setSelectedFutureDate] = useState(
+    futureLessons[0].date
+  );
 
-  const pastLesson = pastLessons.find(l => l.date === selectedPastDate);
-  const futureLesson = futureLessons.find(l => l.date === selectedFutureDate);
+  const pastLesson = pastLessons.find((l) => l.date === selectedPastDate);
+  const futureLesson = futureLessons.find((l) => l.date === selectedFutureDate);
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden ml-32 pb-20" style={{ background: `linear-gradient(270deg, ${PFIZER.blue7}, ${PFIZER.blue8})` }}>
+    <div
+      className="min-h-screen w-full overflow-x-hidden ml-32 pb-20"
+      style={{
+        background: `linear-gradient(270deg, ${PFIZER.blue7}, ${PFIZER.blue8})`,
+      }}
+    >
       <header className="sticky top-0 z-30 border-b backdrop-blur bg-white/70">
         <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-center">
-          <h1 className="text-xl sm:text-3xl font-bold" style={{ color: PFIZER.blue1 }}>Zach's Learning Progress</h1>
+          <h1
+            className="text-xl sm:text-3xl font-bold"
+            style={{ color: PFIZER.blue1 }}
+          >
+            Zach's Learning Progress
+          </h1>
         </div>
       </header>
 
@@ -146,21 +187,27 @@ export default function LearningPage() {
 
         {/* Today's Lesson */}
         <div>
-          <h2 className="text-2xl font-semibold text-[#3857A6] mb-3">📘 Today's Lesson</h2>
+          <h2 className="text-2xl font-semibold text-[#3857A6] mb-3">
+            📘 Today's Lesson
+          </h2>
           <LessonCard lesson={todayLesson} />
         </div>
 
         {/* Past Lessons */}
         <div>
           <div className="flex justify-between items-center mb-3">
-            <h2 className="text-2xl font-semibold text-[#3857A6]">🕒 Past Lessons</h2>
+            <h2 className="text-2xl font-semibold text-[#3857A6]">
+              🕒 Past Lessons
+            </h2>
             <select
               value={selectedPastDate}
               onChange={(e) => setSelectedPastDate(e.target.value)}
               className="border border-blue-300 rounded px-2 py-1"
             >
-              {pastLessons.map(lesson => (
-                <option key={lesson.date} value={lesson.date}>{lesson.date}</option>
+              {pastLessons.map((lesson) => (
+                <option key={lesson.date} value={lesson.date}>
+                  {lesson.date}
+                </option>
               ))}
             </select>
           </div>
@@ -170,14 +217,18 @@ export default function LearningPage() {
         {/* Future Lessons */}
         <div>
           <div className="flex justify-between items-center mb-3">
-            <h2 className="text-2xl font-semibold text-[#3857A6]">🧘‍♀️ Future Lessons</h2>
+            <h2 className="text-2xl font-semibold text-[#3857A6]">
+              🧘‍♀️ Future Lessons
+            </h2>
             <select
               value={selectedFutureDate}
               onChange={(e) => setSelectedFutureDate(e.target.value)}
               className="border border-blue-300 rounded px-2 py-1"
             >
-              {futureLessons.map(lesson => (
-                <option key={lesson.date} value={lesson.date}>{lesson.date}</option>
+              {futureLessons.map((lesson) => (
+                <option key={lesson.date} value={lesson.date}>
+                  {lesson.date}
+                </option>
               ))}
             </select>
           </div>
@@ -187,4 +238,3 @@ export default function LearningPage() {
     </div>
   );
 }
-
