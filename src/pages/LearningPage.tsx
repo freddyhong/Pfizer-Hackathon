@@ -21,8 +21,7 @@ const LS = {
   rewards: "learn.rewards.claimed",
 };
 
-/* Small helpers */
-function cx(...a) {
+function cx(...a: (string | false | null | undefined)[]): string {
   return a.filter(Boolean).join(" ");
 }
 
@@ -45,12 +44,9 @@ function Coin({ size = 22 }) {
   );
 }
 
-/* ───────────────────────────────────────────────────────────────────────────
-   Cancer learning content (kid-friendly)
-   ─────────────────────────────────────────────────────────────────────────── */
-const LESSON_CONTENT = [
+const LESSON_CONTENT: Item[] = [
   {
-    type: "lesson",
+    type: "lesson" as const,
     id: "L1",
     title: "What is Cancer?",
     bullets: [
@@ -61,9 +57,9 @@ const LESSON_CONTENT = [
       "Doctors help the body find and stop those cells.",
     ],
   },
-  { type: "reward", id: "R1" },
+  { type: "reward" as const, id: "R1" },
   {
-    type: "lesson",
+    type: "lesson" as const,
     id: "L2",
     title: "How Doctors Help",
     bullets: [
@@ -73,9 +69,9 @@ const LESSON_CONTENT = [
       "Treatments are chosen carefully to help people feel better.",
     ],
   },
-  { type: "reward", id: "R2" },
+  { type: "reward" as const, id: "R2" },
   {
-    type: "lesson",
+    type: "lesson" as const,
     id: "L3",
     title: "Healthy Habits",
     bullets: [
@@ -85,9 +81,9 @@ const LESSON_CONTENT = [
       "Small healthy choices add up over time!",
     ],
   },
-  { type: "reward", id: "R3" },
+  { type: "reward" as const, id: "R3" },
   {
-    type: "lesson",
+    type: "lesson" as const,
     id: "L4",
     title: "Feelings & Support",
     bullets: [
@@ -145,14 +141,56 @@ const QUIZ = [
 /* ───────────────────────────────────────────────────────────────────────────
    Duolingo-like zig-zag path
    ─────────────────────────────────────────────────────────────────────────── */
-function Path({ items, progress, claimed, onOpenLesson, onCollectReward }) {
+type LessonItem = {
+  type: "lesson";
+  id: string;
+  title: string;
+  bullets: string[];
+};
+
+type RewardItem = {
+  type: "reward";
+  id: string;
+};
+
+type Item = LessonItem | RewardItem;
+
+type PathProps = {
+  items: Item[];
+  progress: number;
+  claimed: number[];
+  onOpenLesson: (idx: number) => void;
+  onCollectReward: (idx: number) => void;
+};
+
+function Path({
+  items,
+  progress,
+  claimed,
+  onOpenLesson,
+  onCollectReward,
+}: PathProps) {
   const STEP = 140;
   const LEFT_A = "12%";
   const LEFT_B = "58%";
   const height = (items.length - 1) * STEP + 240;
 
-  function isUnlocked(idx) {
-    const it = items[idx];
+  interface LessonItemLesson {
+    type: "lesson";
+    id: string;
+    title: string;
+    bullets: string[];
+  }
+
+  interface LessonItemReward {
+    type: "reward";
+    id: string;
+  }
+
+  type LessonItem = LessonItemLesson | LessonItemReward;
+
+  function isUnlocked(idx: number): boolean {
+    const it: LessonItem = items[idx];
     if (it.type === "lesson") {
       return idx === 0 || progress >= idx - 2; // previous lesson index
     }
@@ -241,7 +279,9 @@ function Path({ items, progress, claimed, onOpenLesson, onCollectReward }) {
             ) : (
               <button
                 id={`reward-${idx}`}
-                onClick={() => unlocked && !claimedReward && onCollectReward(idx)}
+                onClick={() =>
+                  unlocked && !claimedReward && onCollectReward(idx)
+                }
                 disabled={!unlocked || claimedReward}
                 className={cx(
                   "relative grid place-items-center rounded-2xl border-4 w-24 h-24 transition-transform",
@@ -253,10 +293,15 @@ function Path({ items, progress, claimed, onOpenLesson, onCollectReward }) {
                   borderColor: PFIZER.blue4,
                   background: PFIZER.blue8,
                 }}
-                title={claimedReward ? "Claimed" : unlocked ? "+50 coins" : "Locked"}
+                title={
+                  claimedReward ? "Claimed" : unlocked ? "+50 coins" : "Locked"
+                }
               >
                 {/* chest (PFIZER colors) */}
-                <div className="w-14 h-10 rounded-md relative" style={{ background: "#9ec0e4" }}>
+                <div
+                  className="w-14 h-10 rounded-md relative"
+                  style={{ background: "#9ec0e4" }}
+                >
                   <div
                     className="absolute inset-x-2 -top-2 h-3"
                     style={{ background: PFIZER.blue7, borderRadius: 4 }}
@@ -288,10 +333,19 @@ function Path({ items, progress, claimed, onOpenLesson, onCollectReward }) {
   );
 }
 
-/* ───────────────────────────────────────────────────────────────────────────
-   Pretty Quiz UI (PFIZER only)
-   ─────────────────────────────────────────────────────────────────────────── */
-function QuizCard({ onSubmit, submitted, quizAnswers, setQuizAnswers }) {
+type QuizCardProps = {
+  onSubmit: () => void;
+  submitted: boolean;
+  quizAnswers: Record<number, number>;
+  setQuizAnswers: React.Dispatch<React.SetStateAction<Record<number, number>>>;
+};
+
+function QuizCard({
+  onSubmit,
+  submitted,
+  quizAnswers,
+  setQuizAnswers,
+}: QuizCardProps) {
   let correct = 0;
   QUIZ.forEach((q, i) => {
     if (quizAnswers[i] === q.a) correct++;
@@ -388,7 +442,10 @@ function QuizCard({ onSubmit, submitted, quizAnswers, setQuizAnswers }) {
           <button
             onClick={onSubmit}
             className="px-4 py-2 rounded-xl font-semibold shadow-sm text-white"
-            style={{ background: PFIZER.blue5, border: `1px solid ${PFIZER.blue4}` }}
+            style={{
+              background: PFIZER.blue5,
+              border: `1px solid ${PFIZER.blue4}`,
+            }}
           >
             Submit Quiz
           </button>
@@ -409,20 +466,21 @@ function QuizCard({ onSubmit, submitted, quizAnswers, setQuizAnswers }) {
    Page
    ─────────────────────────────────────────────────────────────────────────── */
 export default function LearningPage() {
-  const [coins, setCoins] = useState(0);
-  const [progress, setProgress] = useState(-1);
-  const [claimed, setClaimed] = useState([]);
+  const [coins, setCoins] = useState<number>(0);
+  const [progress, setProgress] = useState<number>(-1);
+  const [claimed, setClaimed] = useState<number[]>([]);
 
   // lesson panel state
-  const [openLesson, setOpenLesson] = useState(null);
-  const [watching, setWatching] = useState(false);
-  const [watchedSec, setWatchedSec] = useState(0);
+  const [openLesson, setOpenLesson] = useState<number | null>(null);
+  const [watching, setWatching] = useState<boolean>(false);
+  const [watchedSec, setWatchedSec] = useState<number>(0);
+  const [videoMarkedComplete, setVideoMarkedComplete] =
+    useState<boolean>(false);
   const WATCH_NEED = 30;
-  const [videoMarkedComplete, setVideoMarkedComplete] = useState(false);
 
   // quiz
-  const [quizAnswers, setQuizAnswers] = useState({});
-  const [submitted, setSubmitted] = useState(false);
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
+  const [submitted, setSubmitted] = useState<boolean>(false);
 
   // load persisted
   useEffect(() => {
@@ -448,12 +506,12 @@ export default function LearningPage() {
     return () => clearInterval(t);
   }, [watching]);
 
-  function handleCollect(idx) {
+  function handleCollect(idx: number) {
     setClaimed((r) => [...r, idx]);
     setCoins((c) => c + 50);
   }
 
-  function handleLesson(idx) {
+  function handleLesson(idx: number) {
     setOpenLesson(idx);
     setWatching(false);
     setWatchedSec(0);
@@ -487,7 +545,9 @@ export default function LearningPage() {
   return (
     <div
       className="min-h-screen w-full overflow-x-hidden ml-32"
-      style={{ background: `linear-gradient(180deg, ${PFIZER.blue2}, #ffffff)` }}
+      style={{
+        background: `linear-gradient(180deg, ${PFIZER.blue2}, #ffffff)`,
+      }}
     >
       {/* Header */}
       <header
@@ -495,7 +555,10 @@ export default function LearningPage() {
         style={{ borderColor: PFIZER.blue4 }}
       >
         <div className="flex justify-between px-6 py-3 max-w-6xl mx-auto">
-          <h1 className="text-xl md:text-2xl font-bold" style={{ color: PFIZER.blue1 }}>
+          <h1
+            className="text-xl md:text-2xl font-bold"
+            style={{ color: PFIZER.blue1 }}
+          >
             Learning Path
           </h1>
           <div className="flex items-center gap-2">
@@ -546,11 +609,18 @@ export default function LearningPage() {
           style={{ borderColor: PFIZER.blue4 }}
         >
           {openLesson == null ? (
-            <p style={{ color: PFIZER.blue2 }}>Select a lesson on the left to begin.</p>
+            <p style={{ color: PFIZER.blue2 }}>
+              Select a lesson on the left to begin.
+            </p>
           ) : (
             <div className="space-y-5">
-              <h2 className="text-lg md:text-xl font-bold" style={{ color: PFIZER.blue1 }}>
-                {LESSON_CONTENT[openLesson].title}
+              <h2
+                className="text-lg md:text-xl font-bold"
+                style={{ color: PFIZER.blue1 }}
+              >
+                {"title" in LESSON_CONTENT[openLesson]
+                  ? LESSON_CONTENT[openLesson].title
+                  : ""}
               </h2>
 
               {/* “Video” section – watch timer + content */}
@@ -560,31 +630,46 @@ export default function LearningPage() {
               >
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="text-sm font-semibold" style={{ color: PFIZER.blue1 }}>
+                    <div
+                      className="text-sm font-semibold"
+                      style={{ color: PFIZER.blue1 }}
+                    >
                       Lesson Video (simulated)
                     </div>
                     <div className="text-xs" style={{ color: PFIZER.blue2 }}>
-                      Watched: {Math.min(watchedSec, WATCH_NEED)}s / {WATCH_NEED}s
+                      Watched: {Math.min(watchedSec, WATCH_NEED)}s /{" "}
+                      {WATCH_NEED}s
                     </div>
                   </div>
 
                   {/* Progress bar */}
-                  <div className="w-full h-2 rounded-full mb-4" style={{ background: PFIZER.blue7 }}>
+                  <div
+                    className="w-full h-2 rounded-full mb-4"
+                    style={{ background: PFIZER.blue7 }}
+                  >
                     <div
                       className="h-2 rounded-full"
                       style={{
-                        width: `${Math.min((watchedSec / WATCH_NEED) * 100, 100)}%`,
+                        width: `${Math.min(
+                          (watchedSec / WATCH_NEED) * 100,
+                          100
+                        )}%`,
                         background: PFIZER.blue6,
                       }}
                     ></div>
                   </div>
 
                   {/* Content bullets */}
-                  <ul className="list-disc pl-5 space-y-1 text-sm md:text-base" style={{ color: PFIZER.blue2 }}>
-                    {LESSON_CONTENT[openLesson].bullets.map((b, i) => (
-                      <li key={i}>{b}</li>
-                    ))}
-                  </ul>
+                  {"bullets" in LESSON_CONTENT[openLesson] && (
+                    <ul
+                      className="list-disc pl-5 space-y-1 text-sm md:text-base"
+                      style={{ color: PFIZER.blue2 }}
+                    >
+                      {LESSON_CONTENT[openLesson].bullets.map((b, i) => (
+                        <li key={i}>{b}</li>
+                      ))}
+                    </ul>
+                  )}
 
                   {/* Watch controls */}
                   <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -593,7 +678,10 @@ export default function LearningPage() {
                         <button
                           onClick={() => setWatching((w) => !w)}
                           className="px-3 py-2 rounded-xl font-semibold text-white"
-                          style={{ background: PFIZER.blue5, border: `1px solid ${PFIZER.blue4}` }}
+                          style={{
+                            background: PFIZER.blue5,
+                            border: `1px solid ${PFIZER.blue4}`,
+                          }}
                         >
                           {watching ? "Pause" : "Start"}
                         </button>
@@ -616,20 +704,29 @@ export default function LearningPage() {
                           disabled={!canMarkComplete}
                           className={cx(
                             "px-3 py-2 rounded-xl font-semibold text-white",
-                            canMarkComplete ? "" : "opacity-60 cursor-not-allowed"
+                            canMarkComplete
+                              ? ""
+                              : "opacity-60 cursor-not-allowed"
                           )}
                           style={{
                             background: PFIZER.blue6,
                             border: `1px solid ${PFIZER.blue4}`,
                           }}
-                          title={canMarkComplete ? "+100 coins" : "Watch full time to enable"}
+                          title={
+                            canMarkComplete
+                              ? "+100 coins"
+                              : "Watch full time to enable"
+                          }
                         >
                           Mark Complete (+100)
                         </button>
                       </>
                     )}
                     {videoMarkedComplete && (
-                      <div className="text-sm font-semibold" style={{ color: PFIZER.blue1 }}>
+                      <div
+                        className="text-sm font-semibold"
+                        style={{ color: PFIZER.blue1 }}
+                      >
                         Video complete! +100 coins
                       </div>
                     )}
@@ -641,7 +738,8 @@ export default function LearningPage() {
               <div className="space-y-3">
                 {!canTakeQuiz ? (
                   <div className="text-sm" style={{ color: PFIZER.blue2 }}>
-                    Watch the video for {WATCH_NEED} seconds and press <b>Mark Complete</b> to unlock the quiz.
+                    Watch the video for {WATCH_NEED} seconds and press{" "}
+                    <b>Mark Complete</b> to unlock the quiz.
                   </div>
                 ) : (
                   <QuizCard

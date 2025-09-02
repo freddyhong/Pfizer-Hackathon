@@ -5,7 +5,7 @@ import CalendarPage from "./pages/CalendarPage";
 import LearningPage from "./pages/LearningPage";
 import ProfilePage from "./pages/ProfilePage";
 import AchievementsPage from "./pages/AchievementsPage";
-import JournalPage from "./pages/JournalPage";
+import DailyJournal from "./pages/JournalPage";
 import CareTeamPage from "./pages/CareTeam";
 
 function App() {
@@ -24,7 +24,7 @@ function App() {
       case "Learning":
         return <LearningPage />;
       case "Journal":
-        return <JournalPage />;
+        return <DailyJournal />;
       case "CareTeam":
         return <CareTeamPage />;
       default:
