@@ -1,6 +1,5 @@
 // src/App.tsx
-import React, { useState } from "react";
-import { Navbar } from "../components/Navbar";
+import { useState } from "react";
 import { DailyTasks } from "../components/DailyTasks";
 import characterImage from "../assets/character.png";
 import { Chatbot } from "../components/Chatbot";
@@ -110,22 +109,6 @@ const TopStatusBar = () => (
   </div>
 );
 
-const GreetingBox = ({
-  childName,
-  mood,
-}: {
-  childName: string;
-  mood: string;
-}) => (
-  <div className="w-full max-w-sm text-center mt-4">
-    <div className="bg-white/80 backdrop-blur-md rounded-2xl px-6 py-4 shadow-lg">
-      <p className="font-semibold text-gray-800 text-xl">
-        Hi {childName}! I'm feeling {mood.toLowerCase()} today!
-      </p>
-    </div>
-  </div>
-);
-
 function MainPage() {
   const childName = "Zach";
   const [isTasksVisible, setIsTasksVisible] = useState(false);
@@ -177,9 +160,14 @@ function MainPage() {
             Hi there! You're doing an amazing job.
           </h1>
           <p className="text-lg leading-relaxed text-white/90 text-shadow mt-6">
-            This dashboard is your space to follow Zach’s learning and emotional journey. <br className="mb-2" />
-            Whether it’s a great day or a tough one, your support helps paint a fuller picture of how he’s really doing. <br className="mb-2" />
-            <span className="font-semibold text-white">You’re an essential part of this story — thank you for being here for {childName}.</span>
+            This dashboard is your space to follow Zach’s learning and emotional
+            journey. <br className="mb-2" />
+            Whether it’s a great day or a tough one, your support helps paint a
+            fuller picture of how he’s really doing. <br className="mb-2" />
+            <span className="font-semibold text-white">
+              You’re an essential part of this story — thank you for being here
+              for {childName}.
+            </span>
           </p>
         </header>
         <TopStatusBar />

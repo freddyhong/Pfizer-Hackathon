@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const PFIZER = {
   blue1: "#15144B",
@@ -91,7 +91,10 @@ export default function CalendarPage() {
     if (!todoDraft.trim()) return;
     setTodos((prev) => ({
       ...prev,
-      [k]: [...(prev[k] || []), { id: uid(), text: todoDraft.trim(), done: false }],
+      [k]: [
+        ...(prev[k] || []),
+        { id: uid(), text: todoDraft.trim(), done: false },
+      ],
     }));
     setTodoDraft("");
   }
@@ -100,7 +103,9 @@ export default function CalendarPage() {
     const k = keyFor(selected);
     setTodos((prev) => ({
       ...prev,
-      [k]: (prev[k] || []).map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
+      [k]: (prev[k] || []).map((t) =>
+        t.id === id ? { ...t, done: !t.done } : t
+      ),
     }));
   }
 
@@ -199,22 +204,24 @@ export default function CalendarPage() {
             </button>
           </div>
 
-          { <div className="hidden md:flex items-center gap-2">
-            <span className="inline-flex items-center text-xs gap-1">
-              <span
-                className="w-3 h-3 rounded-full"
-                style={{ background: PFIZER.blue6 }}
-              />
-              Selected
-            </span>
-            <span className="inline-flex items-center text-xs gap-1">
-              <span
-                className="w-3 h-3 rounded-full"
-                style={{ background: PFIZER.blue4 }}
-              />
-              Today
-            </span>
-          </div> }
+          {
+            <div className="hidden md:flex items-center gap-2">
+              <span className="inline-flex items-center text-xs gap-1">
+                <span
+                  className="w-3 h-3 rounded-full"
+                  style={{ background: PFIZER.blue6 }}
+                />
+                Selected
+              </span>
+              <span className="inline-flex items-center text-xs gap-1">
+                <span
+                  className="w-3 h-3 rounded-full"
+                  style={{ background: PFIZER.blue4 }}
+                />
+                Today
+              </span>
+            </div>
+          }
         </div>
       </header>
 
@@ -363,10 +370,16 @@ export default function CalendarPage() {
           </div>
 
           {/* Divider */}
-          <hr className="my-5" style={{ borderColor: PFIZER.blue3, opacity: 0.2 }} />
+          <hr
+            className="my-5"
+            style={{ borderColor: PFIZER.blue3, opacity: 0.2 }}
+          />
 
           {/* ✅ To-do list */}
-          <h3 className="text-md font-semibold mb-2" style={{ color: PFIZER.blue3 }}>
+          <h3
+            className="text-md font-semibold mb-2"
+            style={{ color: PFIZER.blue3 }}
+          >
             To-do
           </h3>
 

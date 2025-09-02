@@ -1,5 +1,5 @@
 // src/pages/DailyJournal.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   LineChart,
   Line,
