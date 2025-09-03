@@ -3,6 +3,9 @@ import { useState } from "react";
 import { DailyTasks } from "../components/DailyTasks";
 import characterImage from "../assets/character.png";
 import { Chatbot } from "../components/Chatbot";
+import garden1 from "../assets/garden.png";
+import garden2 from "../assets/garden2.png";
+
 
 const moods = [
   {
@@ -159,7 +162,7 @@ function MainPage() {
           <h1 className="text-5xl font-bold text-white text-shadow">
             Hi there! You're doing an amazing job.
           </h1>
-          <p className="text-lg leading-relaxed text-white/90 text-shadow mt-6">
+          <p className="text-sm leading-relaxed text-white/90 text-shadow mt-6">
             This dashboard is your space to follow Zach’s learning and emotional
             journey. <br className="mb-2" />
             Whether it’s a great day or a tough one, your support helps paint a
@@ -175,13 +178,26 @@ function MainPage() {
           currentMood={currentMood}
           onSetMood={setCurrentMood}
         />
-        <div className="group cursor-pointer text-center">
-          <img
-            src={characterImage}
-            alt="Poko the Companion"
-            className="w-64 h-64 md:w-80 md:h-80 object-contain transition-transform duration-500 ease-in-out group-hover:scale-110 group-hover:-translate-y-4"
-          />
-        </div>
+        <div className="flex items-center justify-center gap-8 mt-8">
+        <img
+          src={garden1}
+          alt="Garden 1"
+          className="w-64 h-64 md:w-72 md:h-72 object-contain rounded-xl shadow-lg transition-transform duration-500 ease-in-out hover:scale-105"
+        />
+        
+        <img
+          src={characterImage}
+          alt="Poko the Companion"
+          className="w-64 h-64 md:w-80 md:h-80 object-contain transition-transform duration-500 ease-in-out group-hover:scale-110 group-hover:-translate-y-4"
+        />
+
+        <img
+          src={garden2}
+          alt="Garden 2"
+          className="w-64 h-64 md:w-72 md:h-72 object-contain rounded-xl shadow-lg transition-transform duration-500 ease-in-out hover:scale-105"
+        />
+      </div>
+
       </div>
 
       <div className="absolute bottom-8 right-8 z-10">
