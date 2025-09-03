@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 interface Task {
   id: number;
@@ -6,36 +6,21 @@ interface Task {
   completed: boolean;
 }
 
-const initialTasks: Task[] = [
-  { id: 1, text: "Morning check-in", completed: false },
-  { id: 2, text: "Take medicine", completed: false },
+const fixedTasks: Task[] = [
+  { id: 1, text: "Morning check-in", completed: true },
+  { id: 2, text: "Take medicine", completed: true },
   { id: 3, text: "Drink a glass of water", completed: false },
   { id: 4, text: "A moment of quiet time", completed: false },
 ];
 
-const TaskItem: React.FC<{ task: Task; onToggle: () => void }> = ({
-  task,
-  onToggle,
-}) => (
+const TaskItem: React.FC<{ task: Task }> = ({ task }) => (
   <li
-    onClick={onToggle}
     className={`
-      flex items-center p-4 rounded-xl cursor-pointer
-      transition-all duration-300 ease-in-out
-      ${
-        task.completed
-          ? "bg-green-100 text-gray-500"
-          : "bg-white hover:bg-gray-50"
-      }
+      flex items-center p-4 rounded-xl
+      ${task.completed ? "bg-green-100 text-gray-500" : "bg-white"}
     `}
   >
-    <div
-      className={`text-2xl mr-4 transition-transform duration-300 ${
-        task.completed ? "scale-110" : ""
-      }`}
-    >
-      {task.completed ? "✅" : ""}
-    </div>
+    <div className="text-2xl mr-4">{task.completed ? "✅" : ""}</div>
     <span
       className={`flex-1 font-medium ${task.completed ? "line-through" : ""}`}
     >
@@ -45,19 +30,8 @@ const TaskItem: React.FC<{ task: Task; onToggle: () => void }> = ({
 );
 
 export function DailyTasks() {
-  const [tasks, setTasks] = useState(initialTasks);
-
-  const handleToggleTask = (id: number) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  const completedCount = tasks.filter((task) => task.completed).length;
-  const totalTasks = tasks.length;
-  const progressPercentage = (completedCount / totalTasks) * 100;
+  const totalTasks = fixedTasks.length;
+  const completedCount = fixedTasks.filter((task) => task.completed).length;
 
   return (
     <div className="w-full max-w-lg bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6">
@@ -65,25 +39,25 @@ export function DailyTasks() {
         Today's Missions
       </h2>
       <p className="text-center text-gray-600 mb-4">
-        You've completed {completedCount} of {totalTasks} tasks!
+        Zach's completed {completedCount} of {totalTasks} tasks!
       </p>
 
-      {/* Progress Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-        <div
-          className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
-          style={{ width: `${progressPercentage}%` }}
-        ></div>
+      {/* Fixed 4-step Progress Bar */}
+      <div className="flex justify-between mb-6">
+        {fixedTasks.map((task) => (
+          <div
+            key={task.id}
+            className={`flex-1 h-2 mx-1 rounded-full ${
+              task.completed ? "bg-green-500" : "bg-gray-300"
+            }`}
+          />
+        ))}
       </div>
 
       {/* Task List */}
       <ul className="space-y-3">
-        {tasks.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            onToggle={() => handleToggleTask(task.id)}
-          />
+        {fixedTasks.map((task) => (
+          <TaskItem key={task.id} task={task} />
         ))}
       </ul>
     </div>
