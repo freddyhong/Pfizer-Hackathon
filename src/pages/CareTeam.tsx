@@ -47,6 +47,7 @@ export default function CareTeamPage() {
   );
   const [selected, setSelected] = useState<Date | null>(null);
   const [note, setNote] = useState("");
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   const availability: Record<string, string[]> = {
     [keyFor(new Date(2025, 8, 4))]: [
@@ -137,7 +138,10 @@ export default function CareTeamPage() {
                     <button
                       key={k}
                       disabled={!hasAvailability || !inCurrentMonth}
-                      onClick={() => setSelected(date)}
+                      onClick={() => {
+                        setSelected(date);
+                        setSelectedTime(null);
+                      }}
                       className="aspect-square rounded-xl border flex items-center justify-center"
                       style={{
                         background: isSelected
@@ -169,15 +173,23 @@ export default function CareTeamPage() {
           {selected ? (
             <div>
               <h3 className="font-semibold mb-2">{selected.toDateString()}</h3>
-              {(availability[keyFor(selected)] || []).map((time) => (
-                <button
-                  key={time}
-                  className="block w-full text-left px-3 py-2 mb-2 rounded-xl border"
-                  style={{ borderColor: PFIZER.blue3, color: PFIZER.blue2 }}
-                >
-                  {time}
-                </button>
-              ))}
+              {(availability[keyFor(selected)] || []).map((time) => {
+                const isTimeSelected = selectedTime === time;
+                return (
+                  <button
+                    key={time}
+                    onClick={() => setSelectedTime(time)}
+                    className="block w-full text-left px-3 py-2 mb-2 rounded-xl border transition-colors duration-200"
+                    style={{
+                      borderColor: PFIZER.blue3,
+                      background: isTimeSelected ? PFIZER.blue5 : "white",
+                      color: isTimeSelected ? "white" : PFIZER.blue2,
+                    }}
+                  >
+                    {time}
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <p className="text-sm text-gray-500">

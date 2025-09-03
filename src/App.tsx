@@ -7,10 +7,15 @@ import ProfilePage from "./pages/ProfilePage";
 import AchievementsPage from "./pages/AchievementsPage";
 import DailyJournal from "./pages/JournalPage";
 import CareTeamPage from "./pages/CareTeam";
+import LoginPage from "./pages/LoginPage";
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activePage, setActivePage] = useState("Main");
 
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
   const renderPage = () => {
     switch (activePage) {
       case "Main":
@@ -31,6 +36,10 @@ function App() {
         return <MainPage />;
     }
   };
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
   return (
     <div className="relative min-h-screen">
